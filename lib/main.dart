@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'repositoryInfo.dart';
+import 'selectedPage.dart';
 
 const String url = 'https://api.github.com/search/repositories?q=';
-const int maxSize = 30;
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -43,25 +43,18 @@ class MyHomePageState extends ConsumerState<MyHomePage> {
     // githubAPIへのリクエスト
     http.Response res = await http.get(Uri.parse(url + val),
         headers: <String, String>{'X-GitHub-Api-Version': '2022-11-28'});
-    // List<RepositoryInfo> list = <RepositoryInfo>[];
 
     if (res.statusCode == 200) {
       final Map<String, dynamic> body = jsonDecode(res.body);
-      // int totalCount = Math.min(body['total_count'], maxSize);
-      // print(totalCount);
       List<RepositoryInfo> list = (body['items'] as List)
           .map((e) => RepositoryInfo.fromJson(e))
           .toList();
       ref.read(repositoryInfoProvider.notifier).update(list);
       List<RepositoryInfo> repos = ref.watch(repositoryInfoProvider);
-      for (final repo in repos) {
-        repo.printInfo();
-      }
-      // for (int i = 0; i < totalCount; i++) {
-      //   // print(body);
-      //   // print(jsonDecode(body['items'][i]));
-      //   print(body['items'][i]['avatar_url']);
-      //   list.add(RepositoryInfo.fromJson(body['items'][i]));
+      
+      // 取得情報の表示(デバッグ用)
+      // for (final repo in repos) {
+      //   repo.printInfo();
       // }
     }
   }
@@ -103,8 +96,8 @@ class MyHomePageState extends ConsumerState<MyHomePage> {
                     itemBuilder: (BuildContext context, int index) {
                       return ListTile(
                         title: Text(repositoryInfos[index].name),
-                        subtitle: Text("${repositoryInfos[index].language}, ${repositoryInfos[index].starNum}, ${repositoryInfos[index].watcherNum}"),
-                        // onTap: ,
+                        // subtitle: Text("${repositoryInfos[index].language}, ${repositoryInfos[index].starNum}, ${repositoryInfos[index].watcherNum}"),
+                        onTap: () => {Navigator.of(context).push(MaterialPageRoute(builder: (context){ return SelectedPage(repositoryInfo: repositoryInfos[index]);}))},
                       );
                     },
                   ),
